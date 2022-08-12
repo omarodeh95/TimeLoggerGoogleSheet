@@ -1,0 +1,247 @@
+
+n startLog () {
+  var timeStampSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Tickets Timestamps");
+  var lastRecordRow = timeStampSheet.getLastRow();
+  // var lastRecordCode = String.fromCharCode(4 + 64) ;
+  var lastRecordCoord = "D" + lastRecordRow;
+  var lastRecord = timeStampSheet.getRange(lastRecordCoord).getValue();
+  var logIDCoord = "B" + lastRecordRow;
+  var logID = timeStampSheet.getRange(logIDCoord).getValue();
+  if (lastRecord == "start") {
+    var message = logID + " is still recording!" 
+    alertMessage(message);
+  } else {
+    logAction("start");
+  }
+  paintSpreadsheet("green");
+}
+function stopLog() {
+  
+  var timeStampSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Tickets Timestamps");
+  var lastRecordRow = timeStampSheet.getLastRow();
+  var lastRecordCoord = "D" + lastRecordRow;
+  var lastRecord = timeStampSheet.getRange(lastRecordCoord).getValue();
+  var logIDCoord = "B" + lastRecordRow;
+  var logID = timeStampSheet.getRange(logIDCoord).getValue();
+  if (lastRecord == "stop") {
+    var message = logID + " is stopped, please start a new logging" 
+    alertMessage(message);
+  } else {
+    logAction("stop");
+  }
+  paintSpreadsheet("red");
+}
+function logAction(action) {
+  var timeLoggerSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ticket Time Logger");
+
+  var configurations = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Configurations");
+  var ticketRefCoordTmp = "C6";
+  var ticketRefCoord = configurations.getRange(ticketRefCoordTmp).getValue();
+
+  //Hard-coded mapping
+  var ticketRefCoord = "C14";
+  var ticketRefCoord = configurations.getRange(ticketRefCoord).getValue();
+  var ticketPhaseCoord = "C15";
+  var ticketPhaseCoord = configurations.getRange(ticketPhaseCoord).getValue();
+  var timeStampMethodCoord = "C16";
+  var timeStampMethodCoord = configurations.getRange(timeStampMethodCoord).getValue();
+  var timeStampCoord = "C17";
+  var timeStampCoord = configurations.getRange(timeStampCoord).getValue();
+  var ticketLogCommentCoord = "C18";
+  var ticketLogCommentCoord = configurations.getRange(ticketLogCommentCoord).getValue();
+
+  var ticketRef = timeLoggerSheet.getRange(ticketRefCoord).getValue();
+  var ticketType = ticketRef.split("-")[0]
+  var ticketID = ticketRef.split("-")[1]
+  var ticketPhase = timeLoggerSheet.getRange(ticketPhaseCoord).getValue();
+  var timeStampMethod = timeLoggerSheet.getRange(timeStampMethodCoord).getValue();
+  if (timeStampMethod == "auto") {
+    //TODO timezone needs to be fixed
+    var timeStamp = new Date();
+  } else {
+    var timeStamp = timeLoggerSheet.getRange(timeStampCoord).getValue();
+  }
+  var ticketLogComment = timeLoggerSheet.getRange(ticketLogCommentCoord).getValue();
+  var ticketLogSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Tickets Timestamps");
+  var lastRow = ticketLogSheet.getLastRow();
+  var nextRow = lastRow + 1;
+  var id = nextRow - 1;
+  ticketLogSheet.getRange(nextRow,1).setValue(nextRow - 1);
+  ticketLogSheet.getRange(nextRow,2).setValue(ticketRef);
+  ticketLogSheet.getRange(nextRow,3).setValue(ticketPhase);
+  ticketLogSheet.getRange(nextRow,4).setValue(action);
+  ticketLogSheet.getRange(nextRow,5).setValue(timeStamp);
+  ticketLogSheet.getRange(nextRow,6).setValue(ticketLogComment);
+
+  var ticketRefCoordTmp = "C6";
+  var ticketRefCoord = configurations.getRange(ticketRefCoordTmp).getValue();
+  timeLoggerSheet.getRange(ticketRefCoord).setValue(ticketRef);
+  getTicketTimestamps(ticketRef);
+
+}
+
+function getTicketTimestamps(ticketRef="", onlyReturnData="") {
+  var configurations = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Configurations");
+  var ticketTimeLogger = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ticket Time Logger");
+  if (ticketRef=="") {
+    
+    var ticketRefCoordTmp = "C6";
+    var ticketRefCoord = configurations.getRange(ticketRefCoordTmp).getValue();
+
+    var ticketRef = ticketTimeLogger.getRange(ticketRefCoord).getValue();
+  }
+
+  var ticketTimestamps = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Tickets Timestamps");
+  var ticketData = ticketTimestamps.getRange(2,1,ticketTimestamps.getLastRow(),6).getValues();
+
+  var criteria = ticketRef;
+  var fData = ticketData.filter(function(item) {return item[1] == criteria});
+  
+  if (onlyReturnData != "") {
+    return fData;
+  }
+
+  clearTicketTimeLoggerData()
+  var startRow = configurations.getRange("C7").getValue();
+  var startCol = configurations.getRange("C8").getValue().charCodeAt(0) - 64;
+  ticketTimeLogger.getRange(startRow,startCol,fData.length,fData[0].length).setValues(fData);
+}
+
+function clearTicketTimeLoggerData() {
+  var configurations = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Configurations");
+  var startRow = configurations.getRange("C7").getValue();
+  var startCol = configurations.getRange("C8").getValue().charCodeAt(0) - 64;
+
+  var ticketTimeLogger = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ticket Time Logger");
+  var endRow = ticketTimeLogger.getLastRow();
+  var numOfRows = endRow - startRow;
+  ticketTimeLogger.getRange(startRow,startCol,numOfRows,5).clear();
+
+}
+
+
+//make the configuration variables globally (without functions)
+//make a function to calculate the time consumed
+//develop charts and insights for performance analysis
+//handle adding the ticket information
+//monthly kvf generator
+
+function timeConsumed () {
+    //clearing current data on sheet 
+  // clearTicketTimeCalculatorData();
+  // fetching configuration
+  var configurations = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Configurations");
+  var TicketTimeCalculator = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ticket Time Calculator");
+
+  var dateLogTicketRefCoord = configurations.getRange("C20").getValue();
+  var dateLogStartDateCoord = configurations.getRange("C21").getValue();
+  var dateLogEndDateCoord = configurations.getRange("C22").getValue();
+
+  var ticketLogTicketRefCoord = configurations.getRange("C24").getValue();
+
+  var dateLogTicketRef = TicketTimeCalculator.getRange(dateLogTicketRefCoord).getValue();
+  var dateLogStartDate = TicketTimeCalculator.getRange(dateLogStartDateCoord).getValue();
+  var dateLogEndDate = TicketTimeCalculator.getRange(dateLogEndDateCoord).getValue();
+
+  var ticketLogTicketRef = TicketTimeCalculator.getRange(ticketLogTicketRefCoord).getValue();
+
+
+
+  // var ticketRef 
+  var data = getTicketTimestamps(ticketLogTicketRef, 1);
+  console.log(data);
+  if (data.length > 0) {
+    var timeDiffAcumelated = 0
+    console.log(timeDiffAcumelated);
+    for (let i = 0 ; i < data.length - 1 ; i = i + 2) {
+      console.log(data[i+1][4]);
+      timeDiffAcumelated = timeDiffAcumelated + (data[i+1][4].valueOf() - data[i][4].valueOf());
+    }
+    console.log(timeDiffAcumelated);
+    if (data.length % 2 != 0) {
+      var currentDate = new Date();
+      timeDiffAcumelated = timeDiffAcumelated + (currentDate.valueOf() - data[data.length - 1][4].valueOf());
+      notifier(ticketLogTicketRef + "is still recording!");
+    }
+  } else {
+    notifier("There is no date for" + ticketLogTicketRef);
+  }
+  var startDate = data[0][4]
+  var endDate = data[data.length - 1][4]
+  
+
+  var drawStartDateCoord = configurations.getRange("C26").getValue();
+  var drawEndDateCoord = configurations.getRange("C27").getValue();
+  var drawTimeConsumedCoord = configurations.getRange("C28").getValue();
+
+  var drawTicketLogCoord = configurations.getRange("C30").getValue();
+
+  TicketTimeCalculator.getRange(drawStartDateCoord).setValue(startDate);
+  TicketTimeCalculator.getRange(drawEndDateCoord).setValue(endDate);
+  var timeConsumed = getDaysHoursAndMinutes(timeDiffAcumelated);
+  TicketTimeCalculator.getRange(drawTimeConsumedCoord).setValue(timeConsumed);
+
+}
+
+
+
+function getDaysHoursAndMinutes(diff){
+  var sec=1000;
+  var min=60*sec;
+  var hour=60*min;
+  var day=24*hour;
+  var days=Math.floor(diff/day);
+  var hours=Math.floor(diff%day/hour);
+  var minutes=Math.floor(diff%day%hour/min);
+  var timeConsumed = days + " days, " + hours + " hours, " + minutes + " minutes.";
+  Logger.log('%s days %s hours %s minutes',days,hours,minutes).toString();
+  return timeConsumed;
+}
+
+
+
+
+function alertMessage(message) {
+  SpreadsheetApp.getUi().alert(message);
+}
+
+function notifier(message) {
+  SpreadsheetApp.getActive().toast(message);
+
+}
+function paintSpreadsheet(color) {
+  // getTabColorObject: [Function],
+  // setTabColorObject: [Function],
+  // getTabColor: [Function],
+  // setTabColor
+  //#00ff00 --> green
+  //#ff0000 --> red
+  switch (color) {
+    case "red":
+      var rgbColor = "#ff0000";
+      break;
+    case "green":
+      var rgbColor = "#00ff00";
+      break;
+    default:
+      var rgbColor = null;
+      break;
+  }
+  SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ticket Time Logger").setTabColor(rgbColor)
+  // console.log(SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ticket Time Logger").setTabColor(rgbColor));
+  console.log(SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ticket Time Logger").getTabColor());
+}
+
+function init() {
+
+  //This function generate the required sheets to be used correctly
+  SpreadsheetApp.create
+}
+
+
+
+
+
+
+
+
