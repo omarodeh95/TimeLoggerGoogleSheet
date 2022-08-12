@@ -1,5 +1,4 @@
 
-
 function startLog () {
   var timeStampSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Tickets Timestamps");
   var lastRecordRow = timeStampSheet.getLastRow();
@@ -150,15 +149,11 @@ function timeConsumed () {
 
   // var ticketRef 
   var data = getTicketTimestamps(ticketLogTicketRef, 1);
-  console.log(data);
   if (data.length > 0) {
-    var timeDiffAcumelated = 0
-    console.log(timeDiffAcumelated);
+    var timeDiffAcumelated = 0;
     for (let i = 0 ; i < data.length - 1 ; i = i + 2) {
-      console.log(data[i+1][4]);
       timeDiffAcumelated = timeDiffAcumelated + (data[i+1][4].valueOf() - data[i][4].valueOf());
     }
-    console.log(timeDiffAcumelated);
     if (data.length % 2 != 0) {
       var currentDate = new Date();
       timeDiffAcumelated = timeDiffAcumelated + (currentDate.valueOf() - data[data.length - 1][4].valueOf());
@@ -176,6 +171,7 @@ function timeConsumed () {
   var drawTimeConsumedCoord = configurations.getRange("C28").getValue();
 
   var drawTicketLogCoord = configurations.getRange("C30").getValue();
+  //data between data
 
   TicketTimeCalculator.getRange(drawStartDateCoord).setValue(startDate);
   TicketTimeCalculator.getRange(drawEndDateCoord).setValue(endDate);
@@ -183,8 +179,6 @@ function timeConsumed () {
   TicketTimeCalculator.getRange(drawTimeConsumedCoord).setValue(timeConsumed);
 
 }
-
-
 
 function getDaysHoursAndMinutes(diff){
   var sec=1000;
@@ -198,9 +192,6 @@ function getDaysHoursAndMinutes(diff){
   Logger.log('%s days %s hours %s minutes',days,hours,minutes).toString();
   return timeConsumed;
 }
-
-
-
 
 function alertMessage(message) {
   SpreadsheetApp.getUi().alert(message);
@@ -228,9 +219,7 @@ function paintSpreadsheet(color) {
       var rgbColor = null;
       break;
   }
-  SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ticket Time Logger").setTabColor(rgbColor)
-  // console.log(SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ticket Time Logger").setTabColor(rgbColor));
-  console.log(SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ticket Time Logger").getTabColor());
+  SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ticket Time Logger").setTabColor(rgbColor);
 }
 
 function init() {
@@ -238,19 +227,29 @@ function init() {
   //This function generate the required sheets to be used correctly
   alertMessage("Building Ticket Time Logger spreadsheet");
   var ui = SpreadsheetApp.getUi();
-  var result = alertMessageYesNoButton("Are you sure that it is a brand new spreasheet?")
-  console.log(SpreadsheetApp.getUi().Button.YES.YES);
+  var result = alertMessageYesNoButton("Are you sure that it is a brand new spreasheet?");
   if (result != ui.Button.YES) {
     notifier("Let's clean the spreadsheet first!");
     return;
   }
   
+  //insreting sheets into the active spreadsheet
   var configurationSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet()
   configurationSheet.setName("Configurations");
+  var dashboardSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet()
+  dashboardSheet.setName("Dashboard");
+  var ticketsDefinitionSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet()
+  ticketsDefinitionSheet.setName("Tickets Definition");
+  var ticketTimeLoggerSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet()
+  ticketTimeLoggerSheet.setName("Ticket Time Logger");
+  var ticketTimeCalculatorSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet()
+  ticketTimeCalculatorSheet.setName("Ticket Time Calculator");
+  var ticketTimestampsSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet()
+  ticketTimestampsSheet.setName("Tickets Timestamps");
 
-  //test
-  var configurations1 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Configurations1");
-  var data = [ [ 'This sheet is for configuration. it contains mapping data so that you can format\nsheets. and update needed information for javascript to work accordingly.\nplease just insert the records and do not do any editing to this page',
+  // if you want to change the init configurations, you need to manually get the data from the sheets and place them here
+  // to get the data --> sheet.getDataRange().getValues();
+  var confData = [ [ 'This sheet is for configuration. it contains mapping data so that you can format\nsheets. and update needed information for javascript to work accordingly.\nplease just insert the records and do not do any editing to this page',
     '',
     '' ],
   [ '', '', '' ],
@@ -290,11 +289,264 @@ function init() {
   [ 'Ticket Time Calculator draw coord - ticket log',
     'ticket log',
     'A3' ] ]
-    configurationSheet.getRange(1,1,30,3).setValues(data);
-  console.log(data);
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Configurations").getRange(1,1,confData.length,confData[0].length).setValues(confData);
+  var ticketDefData = [ [ 'Ticket Ref',
+    'Task',
+    'Weight',
+    'Initial Estiamtion',
+    'comment',
+    'Current Status',
+    'logging?' ] ];
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Tickets Definition").getRange(1,1,ticketDefData.length,ticketDefData[0].length).setValues(ticketDefData);
+  var dashboardData = [ [ '' ] ]
+  SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Dashboard").getRange(1,1,dashboardData.length,dashboardData[0].length).setValues(dashboardData);
+  var ticketTimeLoggerData = [ [ 'ID',
+    'Ticket Ref ID',
+    'Phase',
+    'Start/Stop',
+    'Time Stamp',
+    'Comments',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'Timestamp',
+    'Ticket type',
+    'Phases' ],
+  [ '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'auto',
+    'OPT',
+    'Walkthrough' ],
+  [ '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'manual',
+    'UI',
+    'Design' ],
+  [ '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'INF',
+    'Design Inspection' ],
+  [ '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'Ticket Ref',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'Coding' ],
+  [ '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'Code Review' ],
+  [ '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'QA Testing' ],
+  [ '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'Done no-release' ],
+  [ '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'Released' ],
+  [ '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'Canceled' ],
+  [ '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '' ],
+  [ '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'Ticket Ref',
+    'Phase',
+    'auto/manual',
+    'TimeStamp',
+    'Comments',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '' ],
+  [ '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'Released',
+    'auto',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '' ] ]
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ticket Time Logger").getRange(1,1,ticketTimeLoggerData.length,ticketTimeLoggerData[0].length).setValues(ticketTimeLoggerData);
+  var ticketTimeCalculatorDate = [ [ 'ticket',
+    'start date',
+    'end date',
+    '',
+    '',
+    '',
+    '',
+    'ticket (insert)' ],
+  [ '', '', '', '', '', '', '', 'time consumed' ],
+  [ '', '', '', '', '', '', '', 'start date' ],
+  [ '', '', '', '', '', '', '', 'end date' ] ]
+  SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Ticket Time Calculator").getRange(1,1,ticketTimeCalculatorDate.length,ticketTimeCalculatorDate[0].length).setValues(ticketTimeCalculatorDate);
+  
+  var ticketsTimestamps = [ [ 'ID', 'Ticket Ref ID', 'Phase', 'Start/Stop', 'Time Stamp' ] ]
+  SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Tickets Timestamps").getRange(1,1,ticketsTimestamps.length,ticketsTimestamps[0].length).setValues(ticketsTimestamps);
 
 }
-
 
 function alertMessageYesNoButton(message, title="") {
   var result = SpreadsheetApp.getUi().alert(title, message, SpreadsheetApp.getUi().ButtonSet.YES_NO);
