@@ -1,5 +1,6 @@
 
-n startLog () {
+
+function startLog () {
   var timeStampSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Tickets Timestamps");
   var lastRecordRow = timeStampSheet.getLastRow();
   // var lastRecordCode = String.fromCharCode(4 + 64) ;
@@ -235,10 +236,70 @@ function paintSpreadsheet(color) {
 function init() {
 
   //This function generate the required sheets to be used correctly
-  SpreadsheetApp.create
+  alertMessage("Building Ticket Time Logger spreadsheet");
+  var ui = SpreadsheetApp.getUi();
+  var result = alertMessageYesNoButton("Are you sure that it is a brand new spreasheet?")
+  console.log(SpreadsheetApp.getUi().Button.YES.YES);
+  if (result != ui.Button.YES) {
+    notifier("Let's clean the spreadsheet first!");
+    return;
+  }
+  
+  var configurationSheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet()
+  configurationSheet.setName("Configurations");
+
+  //test
+  var configurations1 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Configurations1");
+  var data = [ [ 'This sheet is for configuration. it contains mapping data so that you can format\nsheets. and update needed information for javascript to work accordingly.\nplease just insert the records and do not do any editing to this page',
+    '',
+    '' ],
+  [ '', '', '' ],
+  [ '', '', '' ],
+  [ '', '', '' ],
+  [ 'sheet name', 'variable name', 'variable coordinates' ],
+  [ 'Ticket Time Logger - search', 'ticket ref ', 'H5' ],
+  [ 'Ticket Time Logger - search', 'row start coord', 2 ],
+  [ 'Ticket Time Logger - search', 'col start coord', 'A' ],
+  [ '', '', '' ],
+  [ 'Currently Ongoing Tickets', 'row start coord', 2 ],
+  [ 'Currently Ongoing Tickets', 'col start coord', 'A' ],
+  [ '', '', '' ],
+  [ '', '', '' ],
+  [ 'Ticket Time Logger - Logging', 'ticket ref', 'G13' ],
+  [ 'Ticket Time Logger - Logging', 'phase', 'H13' ],
+  [ 'Ticket Time Logger - Logging', 'auto/manual', 'I13' ],
+  [ 'Ticket Time Logger - Logging', 'TimeStamp', 'J13' ],
+  [ 'Ticket Time Logger - Logging', 'comments', 'K13' ],
+  [ '', '', '' ],
+  [ 'Ticket Time Calculator', 'Ticket Ref', 'A2' ],
+  [ 'Ticket Time Calculator', 'Start date', 'B2' ],
+  [ 'Ticket Time Calculator', 'End Date', 'B3' ],
+  [ '', '', '' ],
+  [ 'Ticket Time Calculator', 'Ticket Ref', 'I1' ],
+  [ '', '', '' ],
+  [ 'Ticket Time Calculator draw coord - Start date',
+    'start date',
+    'I3' ],
+  [ 'Ticket Time Calculator draw coord - End date',
+    'end date',
+    'I4' ],
+  [ 'Ticket Time Calculator draw coord - time consumed',
+    'time consumed',
+    'I2' ],
+  [ '', '', '' ],
+  [ 'Ticket Time Calculator draw coord - ticket log',
+    'ticket log',
+    'A3' ] ]
+    configurationSheet.getRange(1,1,30,3).setValues(data);
+  console.log(data);
+
 }
 
 
+function alertMessageYesNoButton(message, title="") {
+  var result = SpreadsheetApp.getUi().alert(title, message, SpreadsheetApp.getUi().ButtonSet.YES_NO);
+  return result;
+}
 
 
 
